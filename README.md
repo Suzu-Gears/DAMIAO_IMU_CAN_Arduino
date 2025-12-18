@@ -1,5 +1,8 @@
 # DAMIAO_IMU_CAN_Arduino
 
+[![Arduino Lint](https://github.com/Suzu-Gears/DAMIAO_IMU_CAN_Arduino/actions/workflows/lint.yml/badge.svg)](https://github.com/Suzu-Gears/DAMIAO_IMU_CAN_Arduino/actions/workflows/lint.yml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Suzu-Gears/DAMIAO_IMU_CAN_Arduino)
+
 ## 概要
 
 このライブラリは、CAN通信を介してDAMIAO製6軸IMU（慣性計測ユニット）DM-IMU-L1をArduinoで利用するためのものです。センサーデータの読み取りや、各種パラメータの設定が可能です。
