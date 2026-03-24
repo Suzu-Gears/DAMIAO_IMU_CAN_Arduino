@@ -278,6 +278,7 @@ private:
   };
 
   static constexpr uint32_t DEFAULT_PARAM_TIMEOUT_MS = 30;
+  static constexpr uint32_t DEFAULT_CANTX_TIMEOUT_US = 1000;
 
   static constexpr float ACCEL_CAN_MAX = 235.2f;
   static constexpr float ACCEL_CAN_MIN = -235.2f;
@@ -292,6 +293,16 @@ private:
   static constexpr float QUATERNION_MAX = 1.0f;
   static constexpr float QUATERNION_MIN = -1.0f;
 
+  bool canWrite(const CanMsg& msg) {
+    unsigned long start = micros();
+    while (can_->write(msg) < 0) {
+      if (static_cast<unsigned long>(micros() - start) >= DEFAULT_CANTX_TIMEOUT_US) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool sendCmd(RegId reg_id, CmdMode rw, uint32_t data) {
     CanMsg txMsg;
     txMsg.id = CanStandardId(slaveId_);
@@ -301,7 +312,7 @@ private:
     txMsg.data[2] = static_cast<uint8_t>(rw);  // 0 for Read, 1 for Write
     txMsg.data[3] = 0xDD;
     std::memcpy(txMsg.data + 4, &data, 4);
-    return can_->write(txMsg) >= 0;
+    return canWrite(txMsg);
   }
 
   std::optional<uint32_t> readReg(RegId reg_id, std::optional<uint32_t> timeout_ms_opt = std::nullopt) {
@@ -372,13 +383,13 @@ private:
   //  int float_to_uint(float x_float, float x_min, float x_max, int bits) {
   //    float span = x_max - x_min;
   //    float offset = x_min;
-  //    return (int)((x_float - offset) * ((float)((1 << bits) - 1)) / span);
+  //    return static_cast<int>((x_float - offset) * (static_cast<float>((1 << bits) - 1)) / span);
   //  }
 
   float uint_to_float(int x_int, float x_min, float x_max, int bits) {
     float span = x_max - x_min;
     float offset = x_min;
-    return ((float)x_int) * span / ((float)((1 << bits) - 1)) + offset;
+    return (static_cast<float>(x_int)) * span / (static_cast<float>((1 << bits) - 1)) + offset;
   }
 
   void updateAccel(const uint8_t* pData) {
